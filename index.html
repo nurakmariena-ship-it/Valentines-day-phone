@@ -2,73 +2,82 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>My Love Book</title>
 
   <style>
+    html, body { height: 100%; }
     body{
       margin:0;
       background:#0f1115;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       overflow:hidden;
     }
+
+    /* Fullscreen book on phone */
     .wrap{
-      min-height:100vh;
+      height: 100vh;
+      height: 100dvh; /* better on mobile address bar */
       display:flex;
       align-items:center;
       justify-content:center;
-      padding:12px;
+      padding: 0;
     }
 
-    /* Book container fills phone screen nicely */
     #book{
-      width: min(980px, 100vw);
-      height: min(680px, 86vh);
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
     }
 
     .page{
       background:#fff;
       box-sizing:border-box;
-      height:100%;
       width:100%;
-      padding:34px 34px;
+      height:100%;
+      padding: 20px 18px;
+      color:#111;
       display:flex;
       flex-direction:column;
-      justify-content:center;
-      color:#111;
+      justify-content:flex-start;
+    }
+
+    /* Text pages: readable + scroll inside the page */
+    .page.text{
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
     }
     .page.text p{
-      font-size:18px;
-      line-height:1.55;
+      font-size:16px;
+      line-height:1.65;
       margin:0;
       white-space:pre-line;
     }
 
+    /* Image pages: NO cropping on phone */
     .page.image, .page.cover{
       padding:0;
       background:#000;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
     .page.image img, .page.cover img{
       width:100%;
       height:100%;
-      object-fit:cover; /* change to contain if you hate cropping */
+      object-fit:contain;  /* KEY CHANGE: fit image, don’t crop */
       display:block;
+      background:#000;
     }
 
-    /* PHONE TUNING */
-    @media (max-width: 520px){
-      .wrap{ padding:0; }
-      #book{
-        width: 100vw;
-        height: 100vh;
-      }
-      .page{
-        padding:22px 18px;
-      }
-      .page.text p{
-        font-size:16px;
-        line-height:1.6;
-      }
+    /* Optional: small hint */
+    .hint{
+      position: fixed;
+      left: 0; right: 0; bottom: 10px;
+      text-align:center;
+      color: rgba(255,255,255,.7);
+      font-size: 12px;
+      pointer-events:none;
     }
   </style>
 </head>
@@ -77,6 +86,7 @@
   <div class="wrap">
     <div id="book"></div>
   </div>
+  <div class="hint">Swipe to flip • Tap left/right edges</div>
 
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js"></script>
 
@@ -260,29 +270,30 @@ story begins.`
 
     bookEl.innerHTML = pages.map(p => `<div class="my-page">${p}</div>`).join("");
 
-    // Detect phone
-    const isPhone = window.matchMedia("(max-width: 520px)").matches;
-
     const pageFlip = new St.PageFlip(bookEl, {
-      width: isPhone ? 320 : 480,
-      height: isPhone ? 520 : 640,
       size: "stretch",
       showCover: true,
-      maxShadowOpacity: 0.35,
+      maxShadowOpacity: 0.25,
       mobileScrollSupport: true,
 
-      // The key: phone-friendly behavior
+      /* PHONE-FIRST SETTINGS */
       usePortrait: true,
-      singlePage: isPhone
+      singlePage: true,
+      width: 320,
+      height: 520
     });
 
     pageFlip.loadFromHTML(document.querySelectorAll(".my-page"));
 
-    // If user rotates / resizes, reload layout properly
-    window.addEventListener("resize", () => {
-      const nowPhone = window.matchMedia("(max-width: 520px)").matches;
-      pageFlip.update({ singlePage: nowPhone });
+    // Tap zones: left/right edges to flip (feels better than tiny swipe area)
+    document.addEventListener("click", (e) => {
+      const x = e.clientX;
+      const w = window.innerWidth;
+      if (x < w * 0.25) pageFlip.flipPrev();
+      else if (x > w * 0.75) pageFlip.flipNext();
     });
   </script>
 </body>
 </html>
+
+
