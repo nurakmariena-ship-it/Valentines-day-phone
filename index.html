@@ -7,6 +7,7 @@
 
   <style>
     html, body { height: 100%; }
+
     body{
       margin:0;
       background:#0f1115;
@@ -14,14 +15,13 @@
       overflow:hidden;
     }
 
-    /* Fullscreen book on phone */
     .wrap{
       height: 100vh;
-      height: 100dvh; /* better on mobile address bar */
+      height: 100dvh;           /* better on mobile */
       display:flex;
       align-items:center;
       justify-content:center;
-      padding: 0;
+      padding:0;
     }
 
     #book{
@@ -42,7 +42,7 @@
       justify-content:flex-start;
     }
 
-    /* Text pages: readable + scroll inside the page */
+    /* Text pages: readable + scroll */
     .page.text{
       overflow:auto;
       -webkit-overflow-scrolling: touch;
@@ -54,7 +54,7 @@
       white-space:pre-line;
     }
 
-    /* Image pages: NO cropping on phone */
+    /* Image/Cover pages: NO cropping */
     .page.image, .page.cover{
       padding:0;
       background:#000;
@@ -65,12 +65,12 @@
     .page.image img, .page.cover img{
       width:100%;
       height:100%;
-      object-fit:contain;  /* KEY CHANGE: fit image, don’t crop */
+      object-fit:contain;  /* fit image nicely */
       display:block;
       background:#000;
     }
 
-    /* Optional: small hint */
+    /* Optional hint */
     .hint{
       position: fixed;
       left: 0; right: 0; bottom: 10px;
@@ -88,6 +88,7 @@
   </div>
   <div class="hint">Swipe to flip • Tap left/right edges</div>
 
+  <!-- PageFlip library -->
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js"></script>
 
   <script>
@@ -110,7 +111,7 @@
       `;
     }
 
-    function imagePage(src, alt="Illustration"){
+    function imagePage(src, alt){
       return `
         <div class="page image">
           <img src="${src}" alt="${escapeHtml(alt)}" />
@@ -126,6 +127,7 @@
       `;
     }
 
+    // Pages (cover + 0..23)
     const pages = [
       coverPage("assets/cover.png"),
       imagePage("assets/p0.png", "Page 0"),
@@ -268,24 +270,26 @@ story begins.`
       textPage("Happy valentines day baby, always remember that I love you")
     ];
 
+    // Render pages
     bookEl.innerHTML = pages.map(p => `<div class="my-page">${p}</div>`).join("");
 
+    // Init flipbook (phone-first)
     const pageFlip = new St.PageFlip(bookEl, {
       size: "stretch",
       showCover: true,
-      maxShadowOpacity: 0.25,
-      mobileScrollSupport: true,
-
-      /* PHONE-FIRST SETTINGS */
       usePortrait: true,
-      singlePage: true,
+      singlePage: true,           // FORCE one page
+      mobileScrollSupport: true,
+      maxShadowOpacity: 0.25,
+
+      // Base page size; stretch handles screen sizes
       width: 320,
       height: 520
     });
 
     pageFlip.loadFromHTML(document.querySelectorAll(".my-page"));
 
-    // Tap zones: left/right edges to flip (feels better than tiny swipe area)
+    // Tap zones: left/right edges to flip
     document.addEventListener("click", (e) => {
       const x = e.clientX;
       const w = window.innerWidth;
